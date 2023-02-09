@@ -69,7 +69,7 @@ class ontario:
             if run:
                     keys = list(map(np.float64, new_d.keys()))
                     x = self.sinusoid_values(keys, params)
-                    self.plot_sinusoid(new_d,params,id)
+                    # self.plot_sinusoid(new_d,params,id)
                     y = list(new_d.values())
 
                     regr = DecisionTreeRegressor(random_state=0)
@@ -312,10 +312,7 @@ class optimize:
     def get_A_eq(self):
         return self.o.get_auo_coefficent()
     def get_b(self):
-        b = self.o.get_year_constraint()  + self.o.get_id_constraint() #+ self.o.get_auo_constraint()
-        #print(len(self.o.get_year_constraint()))
-        #print(len(self.o.get_auo_constraint()))
-        #print(len(self.o.get_id_constraint()))
+        b = self.o.get_year_constraint()  + self.o.get_id_constraint()
         return b
     
     def get_b_eq(self):
@@ -324,22 +321,41 @@ class optimize:
         c = self.o.get_objective(id)
         return c
 
-    def linprog(self,id,A=None,b=None,c=None,A_eq=None,b_eq=None):
+    def linprog(self,id:str,A=None,b=None,c=None,A_eq=None,b_eq=None):
+        '''Method is used to perform linear optimization. The changing variables, constraints, and objective functions are created
+        from vectors built in the ontario object.'''
+
         A = A if A is not None else self.get_A()
-        A_eq = A_eq if A_eq is not None else self.get_A_eq()
-        b_eq = b_eq if b_eq is not None else self.get_b_eq()
+
         b = b if b is not None else self.get_b()
+
+        A_eq = A_eq if A_eq is not None else self.get_A_eq()
+        
+        b_eq = b_eq if b_eq is not None else self.get_b_eq()
+                
         c = c if c is not None else self.get_c(id)
-        # #print(len(A),len(b))
-        # #print(self.back_into(A_eq[27]))
-        # #print(A_eq[12],b_eq[12])
-        res = linprog(c,A_ub=A,b_ub=b,A_eq=A_eq,b_eq=b_eq,integrality=[1 for x in range(len(c))])
+        
+        res = linprog(
+            c,
+            A_ub=A,
+            b_ub=b,
+            A_eq=A_eq,
+            b_eq=b_eq,
+            integrality=[1 for _ in range(len(c))]
+            )
+        
         return res
-    def callback(xk, **kwargs):
-        print("Current solution:", xk)
+
+    def get_built_after(self,x,id_num,year):
+        year = int(year)
+        df = self.back_into(x,id_num)
+        if year in list(df.columns):
+            return df[year]['rooms']
+        return 0
+
+
     def get_all_constraints(self):
         s = self.get_sorted()
-        res = self.linprog('1')
         # print(len(self.o.get_year_constraint_coefficent()[0]))
         l = {}
         dfs = []
@@ -364,7 +380,7 @@ class optimize:
                 goal_b += [new_constraint]
                     # print(id)
             dfs.append(self.create_dfs(res.x,s))
-        # self.animate_it(dfs)
+        self.animate_it(dfs)
         self.animate_built(res.x,s)
     
     def animate_built(self,x,s):
@@ -416,15 +432,9 @@ class optimize:
         # df.plot(kind='bar',stacked=True)
         ani = animation.FuncAnimation(fig, update, frames=len(years), repeat=False)
         plt.show()
-        ani.save('animated_stacked_bar.gif', writer='imagemagick')
+        # ani.save('animated_stacked_bar.gif', writer='imagemagick')
                                 
     
-    def get_built_after(self,x,id_num,year):
-        year = int(year)
-        df = self.back_into(x,id_num)
-        if year in list(df.columns):
-            return df[year]['rooms']
-        return 0
 
     def animate_it(self,df_list):
         def animate(i):
@@ -445,7 +455,7 @@ class optimize:
 
         fig = plt.figure()
         ani = animation.FuncAnimation(fig, animate, frames=len(df_list), interval=200)
-        ani.save("patients_no_linac.gif", writer="imagemagick")
+        # ani.save("patients_no_linac.gif", writer="imagemagick")
         plt.show()
             
         
@@ -587,7 +597,7 @@ class optimize:
         fig, ax = plt.subplots()
         # df.plot(kind='bar',stacked=True)
         ani = animation.FuncAnimation(fig, update, frames=len(years), repeat=False)
-        ani.save('animated_stacked_bar.gif', writer='imagemagick')
+        # ani.save('animated_stacked_bar.gif', writer='imagemagick')
         # plt.ylim(60,plt.ylim()[1])
         plt.show()
     
@@ -647,54 +657,7 @@ class optimize:
 
 
 
-
-cancer_list = {str(x):cancer_centre(x) for x in range(1,17)}
-o = optimize(cancer_list)
-# o.plot_built()
-# o = ontario(cancer_list)
-# #print(o.get_objective('13'))
-# #print(o.get_objective('13'))
-# #print(o.linprog('13').x)
-# #print(o.back_into(o.linprog('13').x))
-print(o.get_all_constraints())
-# #print(o.get_c())
-# #print(o.back_into(o.linprog().x,True))
-# #print(o.get_c())
-
-# o = ontario(cancer_list)
-
-
-# #print(cancer_list)
-# o = ontario(cancer_list)
-
-
-
-
-# #print(back_into(c))
-# #print(back_into(res.x))
-# #print(back_into(res.x,False))
-# #print(res.fun)
-# my_list = [i for i in range(160)]
-
-
-
-
-
-
-
-
-
-# #print([x * y for x,y in zip(res.x,o.get_objective())])
-
-
-
-# d = o.get_year_constraint_coefficent()
-
-# #print(d[0] == d[10])
-# # o = ontario([])
-# # #print(o.get_bounds())
-
-
-
-# Initialize the data for the animation
-
+if __name__ == '__main__':
+    cancer_list = {str(x):cancer_centre(x) for x in range(1,17)}
+    o = optimize(cancer_list)
+    o.get_all_constraints()
