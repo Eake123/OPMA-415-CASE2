@@ -9,6 +9,9 @@ from sklearn.tree import DecisionTreeRegressor
 import matplotlib.animation as animation
 LINAC = -426
 END_YEAR = 2018
+
+'Enter Directory with the json files'
+DIR = ''
 def split_list(input_list, chunk_size):
     return [input_list[i:i + chunk_size] for i in range(0, len(input_list), chunk_size)]
 def back_into(x,openb=True):
@@ -34,10 +37,8 @@ def back_into(x,openb=True):
 class ontario:
     def __init__(self,cancer_dict) -> None:
         self.cancer_dict = cancer_dict
-        self.forecast_json = Json(r'D:\school\year3-winter\opma415\case2\Forecast.json').readKey()
-        # self.forecast = self.create_forecast({x: value for x,value in Json(r'D:\school\year3-winter\opma415\case2\Forecast.json').readKey().items() if x in self.cancer_dict})
-        # #print(self.forecast)
-        self.forecast = {x: value for x,value in Json(r'D:\school\year3-winter\opma415\case2\Forecast.json').readKey().items() if x in self.cancer_dict}
+        self.forecast_json = Json(DIR + 'Forecast.json').readKey()
+        self.forecast = {x: value for x,value in Json(DIR + 'Forecast.json').readKey().items() if x in self.cancer_dict}
         self.obj_forecast = self.create_forecast(self.forecast.copy())
         for key,value in self.forecast.items():
             for key2,value2 in self.obj_forecast.items():
@@ -279,8 +280,8 @@ class ontario:
 class cancer_centre:
     def __init__(self,id,built=None,e_s=None) -> None:
         self.id = id
-        self.built = built if built is not None else Json(r'D:\school\year3-winter\opma415\case2\past.json').readKey()[str(id)]['2013']
-        self.e_s = e_s if e_s is not None else Json(r'D:\school\year3-winter\opma415\case2\empty_swing.json').readKey()[str(id)]
+        self.built = built if built is not None else Json(DIR + 'past.json').readKey()[str(id)]['2013']
+        self.e_s = e_s if e_s is not None else Json(DIR + 'empty_swing.json').readKey()[str(id)]
         self.swing = self.e_s['Swing Rooms']
         self.empty = self.e_s['Empty Rooms']
     def get_constraint(self,constraint):
@@ -385,7 +386,7 @@ class optimize:
     
     def animate_built(self,x,s):
         total_built = {}
-        j = Json(r'D:\school\year3-winter\opma415\case2\past.json').readKey()
+        j = Json(DIR + 'past.json').readKey()
         years = [2005+x for x in range(2021-2005)]
         df = {}
         tw = True
@@ -559,7 +560,7 @@ class optimize:
         
         
     def plot_built(self):
-        built = pd.DataFrame(Json(r'D:\school\year3-winter\opma415\case2\past.json').readKey())
+        built = pd.DataFrame(Json(DIR + 'past.json').readKey())
         x = self.linprog().x
         # open_room = {col:row[col] for col,row in zip(self.back_into(x).columns,self.back_into(x).index)}
         open_room = self.sum_year(x)
