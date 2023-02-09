@@ -10,7 +10,7 @@ import matplotlib.animation as animation
 LINAC = -426
 END_YEAR = 2018
 
-'Enter Directory with the json files'
+# Enter Directory with the json files
 DIR = ''
 def split_list(input_list, chunk_size):
     return [input_list[i:i + chunk_size] for i in range(0, len(input_list), chunk_size)]
